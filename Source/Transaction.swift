@@ -22,7 +22,7 @@ struct Transaction {
     let amount: String
     let authorisationDate: Date
     let description: String
-    let location: CLLocationCoordinate2D
+    var location: CLLocationCoordinate2D? = nil
     let postTransactionBalance: String
     let settlementDate: Date
     
@@ -31,11 +31,6 @@ struct Transaction {
             let authorisationDateString = dict["authorisation_date"] as? String,
             let authorisationDate = isoDateFormatter.date(from: authorisationDateString),
             let description = dict["description"] as? String,
-            let locationDict = dict["location"] as? [String : String],
-            let locationLatitudeString = locationDict["latitude"],
-            let locationLatitude = Double(locationLatitudeString),
-            let locationLongitudeString = locationDict["longitude"],
-            let locationLongitude = Double(locationLongitudeString),
             let postTransactionBalance = dict["post_transaction_balance"] as? String,
             let settlementDateString = dict["settlement_date"] as? String,
             let settlementDate = isoDateFormatter.date(from: settlementDateString) else { return nil }
@@ -43,9 +38,17 @@ struct Transaction {
         self.amount = amount
         self.authorisationDate = authorisationDate
         self.description = description
-        self.location = CLLocationCoordinate2D(latitude: locationLatitude, longitude: locationLongitude)
         self.postTransactionBalance = postTransactionBalance
         self.settlementDate = settlementDate
+        
+        if let locationDict = dict["location"] as? [String : String],
+            let locationLatitudeString = locationDict["latitude"],
+            let locationLatitude = Double(locationLatitudeString),
+            let locationLongitudeString = locationDict["longitude"],
+            let locationLongitude = Double(locationLongitudeString) {
+            self.location = CLLocationCoordinate2D(latitude: locationLatitude, longitude: locationLongitude)
+        }
+
     }
     
     func formattedAuthorizationDate() -> String {
