@@ -11,6 +11,13 @@ import CoreLocation
 
 let isoDateFormatter = ISO8601DateFormatter()
 
+let prettyDateFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .long
+    return formatter
+}()
+
+
 struct Transaction {
     let amount: String
     let authorisationDate: Date
@@ -23,7 +30,7 @@ struct Transaction {
         guard let amount = dict["amount"] as? String,
             let authorisationDateString = dict["authorisation_date"] as? String,
             let authorisationDate = isoDateFormatter.date(from: authorisationDateString),
-            let description = dict["authorisation_date"] as? String,
+            let description = dict["description"] as? String,
             let locationDict = dict["location"] as? [String : String],
             let locationLatitudeString = locationDict["latitude"],
             let locationLatitude = Double(locationLatitudeString),
@@ -39,6 +46,10 @@ struct Transaction {
         self.location = CLLocationCoordinate2D(latitude: locationLatitude, longitude: locationLongitude)
         self.postTransactionBalance = postTransactionBalance
         self.settlementDate = settlementDate
+    }
+    
+    func formattedAuthorizationDate() -> String {
+        return prettyDateFormatter.string(from: self.authorisationDate)
     }
 }
 

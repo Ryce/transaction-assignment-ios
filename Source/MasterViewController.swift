@@ -9,7 +9,7 @@
 import UIKit
 
 class MasterViewController: UITableViewController {
-
+    
     var detailViewController: DetailViewController? = nil
     let session = Session()
     
@@ -37,6 +37,11 @@ class MasterViewController: UITableViewController {
         }
     }
     
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.tableView.register(TransactionSectionHeaderView.classForCoder(), forHeaderFooterViewReuseIdentifier: TransactionSectionHeaderView.identifier)
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         self.clearsSelectionOnViewWillAppear = self.splitViewController!.isCollapsed
         super.viewWillAppear(animated)
@@ -47,7 +52,7 @@ class MasterViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
             if let indexPath = self.tableView.indexPathForSelectedRow {
-                let transaction = transactions![indexPath.row]
+                let transaction = transactions![indexPath.section][indexPath.row]
                 let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
 //                controller.detailItem = transaction
                 controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem
@@ -61,17 +66,28 @@ class MasterViewController: UITableViewController {
     override func numberOfSections(in tableView: UITableView) -> Int {
         return (transactions?.count) ?? 0
     }
-
+    
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 20.0
+    }
+    
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let tableHeaderView = tableView.dequeueReusableHeaderFooterView(withIdentifier: TransactionSectionHeaderView.identifier) as! TransactionSectionHeaderView
+        tableHeaderView.titleLabel.text = self.transactions![section][0].formattedAuthorizationDate()
+        return tableHeaderView
+    }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         let section = transactions?[section] ?? []
         return section.count
     }
-
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: TransactionTableViewCell.identifier, for: indexPath) as! TransactionTableViewCell
 
         let transaction = transactions![indexPath.section][indexPath.row]
-        cell.textLabel!.text = transaction.amount
+        cell.titleLabel.text = transaction.description
+        cell.transactionAmountLabel.text = transaction.amount
         return cell
     }
     
